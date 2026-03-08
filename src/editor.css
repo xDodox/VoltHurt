@@ -1,25 +1,58 @@
 @keyframes tabIn {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-html, body, #root {
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html,
+body,
+#root {
   background: #0d0d0d !important;
   overflow: hidden !important;
   color-scheme: dark;
 }
 
-body, html { scrollbar-width: none; }
-body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
-.hide-scroll { scrollbar-width: none !important; }
-.hide-scroll::-webkit-scrollbar { display: none !important; }
-.tab-scroll-container { scroll-behavior: smooth; }
+body,
+html {
+  scrollbar-width: none;
+}
 
-.monaco-scrollable-element > .scrollbar.vertical {
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  scrollbar-width: none !important;
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none !important;
+}
+
+.tab-scroll-container {
+  scroll-behavior: smooth;
+}
+
+.monaco-scrollable-element>.scrollbar.vertical {
   display: block !important;
   width: 8px !important;
   background: #0d0d0d !important;
@@ -28,20 +61,24 @@ body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
   bottom: 0 !important;
 }
 
-.monaco-scrollable-element > .scrollbar.horizontal {
+.monaco-scrollable-element>.scrollbar.horizontal {
   display: none !important;
 }
-.monaco-scrollable-element > .scrollbar > .slider {
+
+.monaco-scrollable-element>.scrollbar>.slider {
   border-radius: 0 !important;
-  background: rgba(154, 42, 42, 0.35) !important;
+  background: var(--accent-glow) !important;
 }
-.monaco-scrollable-element > .scrollbar > .slider:hover {
-  background: rgba(204, 58, 58, 0.55) !important;
+
+.monaco-scrollable-element>.scrollbar>.slider:hover {
+  background: var(--accent-border) !important;
 }
-.monaco-scrollable-element > .scrollbar > .slider:active {
-  background: rgba(221, 74, 74, 0.7) !important;
+
+.monaco-scrollable-element>.scrollbar>.slider:active {
+  background: var(--accent) !important;
 }
-.monaco-scrollable-element > .scrollbar .arrow-background {
+
+.monaco-scrollable-element>.scrollbar .arrow-background {
   display: none !important;
 }
 
@@ -54,14 +91,20 @@ body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
   right: 0 !important;
   left: auto !important;
 }
+
 .monaco-editor .minimap canvas {
   width: 100px !important;
 }
+
 .monaco-editor .minimap-shadow-visible,
 .monaco-editor .minimap-shadow-hidden {
   display: none !important;
 }
-.monaco-editor .minimap-slider { z-index: 102 !important; }
+
+.monaco-editor .minimap-slider {
+  z-index: 102 !important;
+}
+
 .monaco-editor .minimap-slider,
 .monaco-editor .minimap-slider .minimap-slider-horizontal {
   width: 100px !important;
@@ -69,20 +112,47 @@ body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
   left: 0 !important;
   right: 0 !important;
 }
+
 .monaco-editor .overflow-guard {
   clip-path: none !important;
   overflow: hidden !important;
 }
 
-.monaco-editor .margin { border-right: 1px solid var(--accent-glow) !important; }
-.monaco-editor .current-line { border: 1px solid var(--accent-glow) !important; }
-.monaco-editor .margin .current-line-margin { background: transparent !important; border: none !important; }
+.monaco-editor .margin {
+  border-right: 1px solid var(--accent-glow) !important;
+}
+
+.monaco-editor .current-line {
+  border: 1px solid var(--accent-glow) !important;
+}
+
+.monaco-editor .margin .current-line-margin {
+  background: transparent !important;
+  border: none !important;
+}
 
 .monaco-editor .codicon-folding-collapsed,
-.monaco-editor .codicon-folding-expanded { color: #4a9eff !important; opacity: 0.8; }
-.monaco-editor .codicon-folding-collapsed:hover,
-.monaco-editor .codicon-folding-expanded:hover { opacity: 1 !important; color: #6ab8ff !important; }
+.monaco-editor .codicon-folding-expanded {
+  color: #4a9eff !important;
+  opacity: 0.8;
+}
 
-button { outline: none !important; -webkit-tap-highlight-color: transparent !important; }
-button:focus { outline: none !important; box-shadow: none !important; }
-button:focus-visible { outline: none !important; }
+.monaco-editor .codicon-folding-collapsed:hover,
+.monaco-editor .codicon-folding-expanded:hover {
+  opacity: 1 !important;
+  color: #6ab8ff !important;
+}
+
+button {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:focus-visible {
+  outline: none !important;
+}

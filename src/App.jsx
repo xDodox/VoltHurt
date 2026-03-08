@@ -37,14 +37,14 @@ function parseLogLine(s) {
   const cleanMsg = isSirhurt ? message.replace(/^\[SH\]\s*/, "") : message;
 
   const levelStyles = {
-    OK:    { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/25", label: "SUCC" },
-    ERR:   { bg: "bg-red-500/15",     text: "text-red-400",     border: "border-red-500/25",     label: "ERR" },
-    WARN:  { bg: "bg-yellow-500/15",  text: "text-yellow-400",  border: "border-yellow-500/25",  label: "WARN" },
-    INFO:  { bg: "bg-white/5",        text: "text-gray-400",    border: "border-white/10",        label: "INFO" },
-    DEBUG: { bg: "bg-white/3",        text: "text-gray-600",    border: "border-white/5",         label: "DBG" },
-    EXEC:  { bg: "bg-[var(--accent)]/10", text: "text-gray-400", border: "border-[var(--accent)]/20", label: "EXEC" },
-    SH:    { bg: "bg-purple-500/10",  text: "text-purple-300",  border: "border-purple-500/20",  label: "SH" },
-    RBX:   { bg: "bg-blue-500/15",    text: "text-blue-300",    border: "border-blue-500/25",    label: "RBX" },
+    OK: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/25", label: "SUCC" },
+    ERR: { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/25", label: "ERR" },
+    WARN: { bg: "bg-yellow-500/15", text: "text-yellow-400", border: "border-yellow-500/25", label: "WARN" },
+    INFO: { bg: "bg-white/5", text: "text-gray-400", border: "border-white/10", label: "INFO" },
+    DEBUG: { bg: "bg-white/3", text: "text-gray-600", border: "border-white/5", label: "DBG" },
+    EXEC: { bg: "bg-[var(--accent)]/10", text: "text-gray-400", border: "border-[var(--accent)]/20", label: "EXEC" },
+    SH: { bg: "bg-purple-500/10", text: "text-purple-300", border: "border-purple-500/20", label: "SH" },
+    RBX: { bg: "bg-blue-500/15", text: "text-blue-300", border: "border-blue-500/25", label: "RBX" },
   };
 
   const style = levelStyles[level] || { bg: "", text: "text-gray-500", border: "", label: null };
@@ -254,18 +254,19 @@ function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, stat
                   <Toggle checked={settings.autoInject} onChange={v => setSetting("autoInject", v)} />
                 </SettingsRow>
                 <SettingsRow label="Inject Delay" sub="Milliseconds to wait before injecting">
-                  <div className="flex items-center gap-4">
-                    <div className="relative flex items-center w-40">
-                      <div className="w-full h-1.5 rounded-full bg-[#1a1a1e]">
-                        <div className="h-full rounded-full" style={{ width: `${(settings.injectDelay / 3000) * 100}%`, background: "linear-gradient(90deg, var(--accent), var(--accent-light))" }} />
-                      </div>
-                      <input type="range" min={0} max={3000} step={100} value={settings.injectDelay}
-                        onChange={e => setSetting("injectDelay", Number(e.target.value))}
-                        className="absolute inset-0 w-full opacity-0 cursor-pointer h-full" />
-                      <div className="absolute w-4 h-4 rounded-full bg-white border-2 border-accent shadow-lg pointer-events-none"
-                        style={{ left: `calc(${(settings.injectDelay / 3000) * 100}% - 8px)` }} />
-                    </div>
-                    <span className="text-[11px] text-gray-400 font-bold font-mono w-14 tabular-nums">{settings.injectDelay}ms</span>
+                  <div className="flex items-center gap-2 bg-[#0a0a0c] border border-white/5 hover:border-white/10 rounded-xl px-3 h-9 transition-all focus-within:border-accent/40">
+                    <input
+                      type="number"
+                      min={0}
+                      max={30000}
+                      value={settings.injectDelay}
+                      onChange={e => {
+                        const val = Math.max(0, Math.min(30000, Number(e.target.value) || 0));
+                        setSetting("injectDelay", val);
+                      }}
+                      className="bg-transparent outline-none text-[13px] text-white font-bold font-mono w-20 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-[11px] text-gray-600 font-medium">ms</span>
                   </div>
                 </SettingsRow>
                 <SettingsRow label="Keep on Top" sub="Window stays above Roblox">
@@ -604,6 +605,7 @@ export default function App() {
   const attachRef = useRef(null);
   const settingsRef = useRef({});
   const settingsLoaded = useRef(false);
+  const sessionLoaded = useRef(false);
   const [isCreatingScript, setIsCreatingScript] = useState(false);
   const [isCreatingAutoExec, setIsCreatingAutoExec] = useState(false);
   const [newName, setNewName] = useState("");
@@ -660,7 +662,7 @@ export default function App() {
       const cur = scriptDragRef.current;
       if (!cur) return;
       const dx = e.clientX - cur.x, dy = e.clientY - cur.y;
-      if (!cur.started && Math.sqrt(dx*dx + dy*dy) < 4) return;
+      if (!cur.started && Math.sqrt(dx * dx + dy * dy) < 4) return;
       cur.started = true;
       const sidebarEl = sidebarRef.current;
       let clampedX = e.clientX, clampedY = e.clientY;
@@ -713,7 +715,7 @@ export default function App() {
             await invoke("delete_script", { name: cur.name });
             refreshAutoExecScripts();
             refreshLocalScripts();
-          } catch {}
+          } catch { }
         }
       } else if (cur.from === "autoexec" && scriptsEl) {
         const r = scriptsEl.getBoundingClientRect();
@@ -724,7 +726,7 @@ export default function App() {
             await invoke("delete_autoexec_script", { name: cur.name });
             refreshLocalScripts();
             refreshAutoExecScripts();
-          } catch {}
+          } catch { }
         }
       }
     };
@@ -799,30 +801,34 @@ export default function App() {
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    invoke("save_config", { config: {
-      fontSize: settings.fontSize,
-      fontFamily: settings.fontFamily,
-      lineNumbers: settings.lineNumbers,
-      minimap: settings.minimap,
-      wordWrap: settings.wordWrap,
-      autoInject: settings.autoInject,
-      injectDelay: settings.injectDelay,
-      topMost: settings.topMost,
-      accentColor: settings.accentColor,
-      macAddress: settings.macAddress || "",
-      allowReinject: settings.allowReinject,
-      discordRpc: settings.discordRpc,
-      confirmTabDelete: settings.confirmTabDelete,
-      folding: settings.folding,
-      robloxPath: settings.robloxPath || "",
-      wizardShown: settings.wizardShown || false,
-    }}).catch(console.error);
+    invoke("save_config", {
+      config: {
+        fontSize: settings.fontSize,
+        fontFamily: settings.fontFamily,
+        lineNumbers: settings.lineNumbers,
+        minimap: settings.minimap,
+        wordWrap: settings.wordWrap,
+        autoInject: settings.autoInject,
+        injectDelay: settings.injectDelay,
+        topMost: settings.topMost,
+        accentColor: settings.accentColor,
+        macAddress: settings.macAddress || "",
+        allowReinject: settings.allowReinject,
+        discordRpc: settings.discordRpc,
+        confirmTabDelete: settings.confirmTabDelete,
+        folding: settings.folding,
+        robloxPath: settings.robloxPath || "",
+        wizardShown: settings.wizardShown || false,
+      }
+    }).catch(console.error);
   }, [settings]);
 
   useEffect(() => {
+    if (!sessionLoaded.current) return;
+    const liveCode = editorRef.current ? editorRef.current.getValue() : null;
     const sessionTabs = tabs
       .filter(t => t !== "Welcome")
-      .map(t => ({ name: t, code: codes[t] || "", active: t === activeTab }));
+      .map(t => ({ name: t, code: (t === activeTab && liveCode !== null) ? liveCode : (codes[t] || ""), active: t === activeTab }));
     invoke("save_session", { session: { tabs: sessionTabs } }).catch(console.error);
   }, [tabs, codes, activeTab]);
 
@@ -1110,9 +1116,10 @@ export default function App() {
         setCodes(codeMap);
         setActiveTab(activeOne);
       }
+      sessionLoaded.current = true;
     }).catch(console.error);
 
-    invoke("check_app_update").then(info => { if (info?.available) setUpdateInfo(info); }).catch(() => {});
+    invoke("check_app_update").then(info => { if (info?.available) setUpdateInfo(info); }).catch(() => { });
     invoke("start_console_server").catch(console.error);
     invoke("start_script_watcher").catch(console.error);
 
@@ -1525,6 +1532,65 @@ export default function App() {
   useEffect(() => {
     if (!editorRef.current) return;
     editorRef.current.updateOptions(MONACO_OPTIONS(settings));
+    if (window.__monaco) {
+      const color = settings.accentColor || "#c0392b";
+      const addAlpha = (hex, a) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r},${g},${b},${a})`;
+      };
+      const hex = color.replace("#", "");
+      window.__monaco.editor.defineTheme("sirhurt", {
+        base: "vs-dark",
+        inherit: false,
+        rules: [
+          { token: "", foreground: "c9d1d9", background: "0d0d0d" },
+          { token: "comment", foreground: "3d5166", fontStyle: "italic" },
+          { token: "keyword", foreground: hex, fontStyle: "bold" },
+          { token: "type", foreground: "4ec9b0" },
+          { token: "string", foreground: "ce9178" },
+          { token: "string.escape", foreground: "d7ba7d" },
+          { token: "string.invalid", foreground: "f44747" },
+          { token: "number", foreground: "b5cea8" },
+          { token: "identifier", foreground: "c9d1d9" },
+          { token: "operator", foreground: "c9d1d9" },
+          { token: "delimiter", foreground: "ffd700" },
+        ],
+        colors: {
+          "editor.background": "#0d0d0d",
+          "editor.foreground": "#c9d1d9",
+          "editor.lineHighlightBackground": `${color}0e`,
+          "editor.lineHighlightBorder": `${color}28`,
+          "editor.selectionBackground": `${color}50`,
+          "editor.inactiveSelectionBackground": `${color}20`,
+          "editorLineNumber.foreground": `#${hex}55`,
+          "editorLineNumber.activeForeground": `#${hex}`,
+          "editorCursor.foreground": color,
+          "editorIndentGuide.background1": `${color}18`,
+          "editorIndentGuide.activeBackground1": `${color}28`,
+          "editorSuggestWidget.background": "#0f1318",
+          "editorSuggestWidget.border": `${color}55`,
+          "editorSuggestWidget.foreground": "#c9d1d9",
+          "editorSuggestWidget.selectedBackground": `${color}38`,
+          "editorSuggestWidget.selectedForeground": "#ffffff",
+          "editorSuggestWidget.highlightForeground": color,
+          "editorHoverWidget.background": "#0f1318",
+          "editorHoverWidget.border": `${color}55`,
+          "editorBracketMatch.background": `${color}30`,
+          "editorBracketMatch.border": `${color}55`,
+          "editorGutter.background": "#0d0d0d",
+          "editorOverviewRuler.border": "#00000000",
+          "minimap.background": "#0a0a0a",
+          "minimapSlider.background": `${color}38`,
+          "minimapSlider.hoverBackground": `${color}60`,
+          "scrollbarSlider.background": `${color}30`,
+          "scrollbarSlider.hoverBackground": `${color}45`,
+          "scrollbarSlider.activeBackground": `${color}58`,
+        },
+      });
+      window.__monaco.editor.setTheme("sirhurt");
+    }
     requestAnimationFrame(forceEditorLayout);
   }, [settings]);
 
@@ -1786,7 +1852,7 @@ export default function App() {
                           onMouseDown={(e) => { e.stopPropagation(); handleScriptMouseDown(e, s, "scripts"); }}
                           className="opacity-0 group-hover:opacity-40 hover:!opacity-80 text-gray-500 cursor-grab active:cursor-grabbing shrink-0 select-none"
                           title="Drag to Auto Exec">
-                          <svg width="8" height="10" viewBox="0 0 8 10" fill="currentColor"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="5" r="1"/><circle cx="6" cy="5" r="1"/><circle cx="2" cy="8" r="1"/><circle cx="6" cy="8" r="1"/></svg>
+                          <svg width="8" height="10" viewBox="0 0 8 10" fill="currentColor"><circle cx="2" cy="2" r="1" /><circle cx="6" cy="2" r="1" /><circle cx="2" cy="5" r="1" /><circle cx="6" cy="5" r="1" /><circle cx="2" cy="8" r="1" /><circle cx="6" cy="8" r="1" /></svg>
                         </span>
                         <div className={`w-4 h-4 rounded-sm flex items-center justify-center shrink-0 ${activeScript === s ? "bg-accent/30" : "bg-white/[0.03] group-hover:bg-white/[0.06]"} transition-colors`}>
                           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={activeScript === s ? "white" : "#6b7a8d"} strokeWidth="2"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
@@ -1903,16 +1969,16 @@ export default function App() {
                           <span
                             onMouseDown={(e) => { e.stopPropagation(); handleScriptMouseDown(e, script, "autoexec"); }}
                             className="opacity-0 group-hover:opacity-40 hover:!opacity-80 text-gray-500 cursor-grab active:cursor-grabbing shrink-0 select-none">
-                            <svg width="8" height="10" viewBox="0 0 8 10" fill="currentColor"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="5" r="1"/><circle cx="6" cy="5" r="1"/><circle cx="2" cy="8" r="1"/><circle cx="6" cy="8" r="1"/></svg>
+                            <svg width="8" height="10" viewBox="0 0 8 10" fill="currentColor"><circle cx="2" cy="2" r="1" /><circle cx="6" cy="2" r="1" /><circle cx="2" cy="5" r="1" /><circle cx="6" cy="5" r="1" /><circle cx="2" cy="8" r="1" /><circle cx="6" cy="8" r="1" /></svg>
                           </span>
                           <div className="w-4 h-4 rounded-sm flex items-center justify-center shrink-0 bg-white/[0.03] group-hover:bg-white/[0.06] transition-colors">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#6b7a8d" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#6b7a8d" strokeWidth="2"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
                           </div>
                           <span className="truncate flex-1 font-mono tracking-tight">{script}</span>
                           <button
                             onClick={(e) => { e.stopPropagation(); if (script === "_volthurt_console" || script === "_volthurt_console.lua") return; invoke("delete_autoexec_script", { name: script }).then(refreshAutoExecScripts); }}
                             className="opacity-0 group-hover:opacity-100 w-4 h-4 flex items-center justify-center hover:text-red-400 text-gray-600 transition-all shrink-0 cursor-pointer">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
                           </button>
                         </div>
                       ))
@@ -2081,7 +2147,7 @@ export default function App() {
                       }}
                       className={`w-5 h-5 flex items-center justify-center rounded border transition-all cursor-pointer mr-1.5 ${robloxPath ? "text-gray-500 hover:text-accent-light hover:bg-accent/15 border-transparent hover:border-accent/25" : "text-gray-700 border-transparent opacity-50"}`}
                     >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
                     </button>
                   </Tooltip>
                   {instances.length === 0 ? (
@@ -2153,7 +2219,7 @@ export default function App() {
                       }}
                       className="p-1 px-2 rounded hover:bg-yellow-500/10 text-gray-500 hover:text-yellow-400 transition-all flex items-center gap-1.5 border border-transparent hover:border-yellow-500/20 active:scale-95 group cursor-pointer"
                     >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" /><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
                       <span className="text-[8px] font-bold uppercase tracking-tighter opacity-70 group-hover:opacity-100">Clean</span>
                     </button>
                   </Tooltip>
@@ -2285,7 +2351,7 @@ export default function App() {
               style={{ boxShadow: "0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(192,57,43,0.12)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-accent/10 border border-accent/25 flex items-center justify-center text-accent-light shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                 </div>
                 <div>
                   <div className="text-white font-bold text-[13px]">Update Available</div>

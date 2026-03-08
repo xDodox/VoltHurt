@@ -181,7 +181,7 @@ export function WelcomeTab({
 
         <div className="flex flex-col items-center w-full px-8 pt-8 pb-16 gap-5">
 
-          
+
           <motion.div
             variants={itemVars}
             className="relative mt-8 mb-6">
@@ -189,7 +189,7 @@ export function WelcomeTab({
             <img src={logo} alt="VoltHurt" className="w-32 h-32 object-contain relative transition-transform hover:scale-105 duration-700" />
           </motion.div>
 
-          
+
           <motion.div variants={itemVars} className="w-full max-w-[340px] flex flex-col gap-2.5">
             <div className="flex items-center gap-2 mb-1 px-1">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-70">
@@ -198,7 +198,7 @@ export function WelcomeTab({
               <h2 className="text-[11px] text-white font-bold tracking-[0.05em]">Setup Progress</h2>
             </div>
 
-            
+
             <div className="bg-[#0b0c0f]/80 border border-white/5 rounded-xl p-3.5 flex items-center gap-4 transition-all hover:bg-[#111418] hover:border-white/10">
 
               <div className={`shrink-0 w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center bg-black/40 ${isInstalled ? "animate-in" : ""}`}>
@@ -213,12 +213,12 @@ export function WelcomeTab({
                   {isInstalled ? "VoltHurt Core is ready." : !statusInfo?.coreFilesExist ? "Core files missing (Install required)." : "Update required."}
                 </p>
                 <div className="flex gap-2">
-                  
+
                   <button onClick={onLaunchSirstrap} disabled={isUpdating}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded border text-[10px] font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${isUpdateNeeded
                       ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30"
                       : "bg-white/5 border-white/10 text-emerald-400/80 hover:text-emerald-300 hover:bg-white/10"
-                    }`}>
+                      }`}>
                     {isUpdating ? <IcoSpinner /> : isInstalled ? <IcoReinstall /> : <IcoDownload />}
                     {" "}{isUpdating ? "Downloading..." : isUpdateNeeded ? "Update Now" : isInstalled ? "Reinstall" : "Download"}
                   </button>
@@ -231,7 +231,7 @@ export function WelcomeTab({
               </div>
             </div>
 
-            
+
             {statusInfo && (
               <div className="bg-[#0b0c0f]/80 border border-white/5 rounded-xl p-3.5 flex items-center gap-4 transition-all hover:bg-[#111418] hover:border-white/10">
                 <div className={`shrink-0 w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center bg-black/40 ${statusInfo.sirhurtRobloxCompatible && statusInfo.sirhurtLocalCompatible ? "animate-in" : ""}`}>
@@ -276,7 +276,7 @@ export function WelcomeTab({
                 </p>
                 <button onClick={onBrowseRoblox}
                   className="flex items-center gap-1.5 px-3 py-1 rounded border bg-white/5 border-white/10 text-[10px] text-gray-400 font-semibold hover:text-white hover:bg-white/10 transition-all cursor-pointer">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
                   {robloxPath ? "Change" : "Browse Folder"}
                 </button>
                 {!robloxPath && (
@@ -288,7 +288,7 @@ export function WelcomeTab({
             </div>
           </motion.div>
 
-          
+
           <motion.div variants={itemVars} className="w-full max-w-[340px] mt-2">
             <div className="grid grid-cols-2 gap-3">
               {actions.slice(0, 2).map((a) => (
@@ -304,7 +304,7 @@ export function WelcomeTab({
             </div>
           </motion.div>
 
-          
+
           <motion.div variants={itemVars} className="w-full max-w-xs" style={{ animation: "fadeSlideIn 0.4s ease 0.55s both" }}>
             <div className="text-[9px] text-gray-700 uppercase tracking-widest mb-2 px-1">Recent Files</div>
             <div className="bg-[#111418] border border-white/5 rounded-xl overflow-hidden">
@@ -331,7 +331,7 @@ export function WelcomeTab({
 
         </div>
 
-        
+
         <div className="absolute right-0 w-[5px] pointer-events-none" style={{ zIndex: 10 }}>
           <div className="absolute right-0 w-[5px] pointer-events-auto cursor-pointer" onMouseDown={onMouseDown}
             style={{

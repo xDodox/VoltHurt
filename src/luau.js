@@ -83,6 +83,7 @@ export const LUAU_SNIPPETS = [
 export function setupLuau(monaco) {
   if (monaco._luauSetup) return;
   monaco._luauSetup = true;
+  window.__monaco = monaco;
 
   monaco.languages.register({ id: "luau" });
 
