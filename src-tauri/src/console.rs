@@ -55,7 +55,11 @@ fn run_relay_watcher(handle: tauri::AppHandle, relay_path: std::path::PathBuf) {
         } else {
             let pos = last_pos as usize;
             if pos >= content.len() { last_pos = size; continue; }
-            &content[pos..]
+            let safe_pos = content.char_indices()
+                .map(|(i, _)| i)
+                .find(|&i| i >= pos)
+                .unwrap_or(content.len());
+            &content[safe_pos..]
         };
 
         for line in new_text.lines() {

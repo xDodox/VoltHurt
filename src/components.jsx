@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 
 export function Tooltip({ text, children }) {
   const [visible, setVisible] = useState(false);
@@ -23,6 +23,54 @@ export function Tooltip({ text, children }) {
         </span>
       )}
     </span>
+  );
+}
+
+export function Toggle({ checked, value, onChange }) {
+  const on = checked !== undefined ? checked : !!value;
+  return (
+    <button
+      onClick={() => onChange(!on)}
+      className="toggle-root"
+      data-on={on ? "true" : "false"}
+      aria-checked={on}
+      role="switch"
+    >
+      <span className="toggle-label" style={{ color: on ? "#444" : "#ddd" }}>OFF</span>
+      <span className="toggle-divider" />
+      <span className="toggle-label" style={{ color: on ? "#fff" : "#444" }}>ON</span>
+      <span className="toggle-fill" />
+    </button>
+  );
+}
+
+export function Slider({ min = 0, max = 100, value, onChange, step = 1 }) {
+  const pct = ((value - min) / (max - min)) * 100;
+  const trackRef = useRef(null);
+
+  const compute = useCallback((clientX) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    const raw = (clientX - rect.left) / rect.width;
+    const clamped = Math.min(1, Math.max(0, raw));
+    const stepped = Math.round((clamped * (max - min)) / step) * step + min;
+    onChange(Math.min(max, Math.max(min, stepped)));
+  }, [min, max, step, onChange]);
+
+  const onMouseDown = (e) => {
+    compute(e.clientX);
+    const move = (ev) => compute(ev.clientX);
+    const up   = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
+
+  return (
+    <div className="slider-root" ref={trackRef} onMouseDown={onMouseDown}>
+      <div className="slider-track">
+        <div className="slider-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="slider-thumb" style={{ left: `${pct}%` }} />
+    </div>
   );
 }
 

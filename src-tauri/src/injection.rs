@@ -13,6 +13,9 @@ pub fn set_always_on_top(handle: tauri::AppHandle, enabled: bool) -> Result<(), 
 
 #[tauri::command]
 pub fn inject(handle: tauri::AppHandle) -> Result<(), String> {
+    if WATCHER_ACTIVE.load(Ordering::SeqCst) {
+        return Err("Injection already in progress.".into());
+    }
     let processes = ["RobloxPlayerBeta.exe", "Euroblox.exe", "RobloxPlayerLauncher.exe"];
     let mut found = false;
     let mut system = sysinfo::System::new_all();

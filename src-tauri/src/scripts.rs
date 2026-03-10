@@ -93,6 +93,7 @@ pub fn get_autoexec_scripts() -> Vec<String> {
                     None
                 }
             })
+            .filter(|n| !n.starts_with("_volthurt_console"))
             .collect())
         .unwrap_or_default()
 }

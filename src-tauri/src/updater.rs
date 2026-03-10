@@ -19,7 +19,7 @@ pub fn open_scripts_folder() -> Result<(), String> {
 pub fn open_autoexec_folder() -> Result<(), String> {
     let path = dirs::data_dir()
         .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join("sirhurt").join("sirhui").join("autoexec");
+        .join("VoltHurt").join("autoexe");
     let _ = fs::create_dir_all(&path);
     #[cfg(windows)]
     std::process::Command::new("explorer.exe").arg(&path).spawn()
@@ -36,6 +36,7 @@ pub fn start_script_watcher(handle: tauri::AppHandle) {
     std::thread::spawn(move || {
         let mut last: Vec<(String, std::time::SystemTime)> = Vec::new();
         loop {
+            if !SCRIPT_WATCHER_ACTIVE.load(Ordering::SeqCst) { break; }
             std::thread::sleep(std::time::Duration::from_millis(1500));
             let mut snap: Vec<(String, std::time::SystemTime)> =
                 fs::read_dir(&scripts_dir).ok()
@@ -51,6 +52,7 @@ pub fn start_script_watcher(handle: tauri::AppHandle) {
             snap.sort_by(|a, b| a.0.cmp(&b.0));
             if snap != last { last = snap; let _ = handle.emit("scripts-changed", ()); }
         }
+        SCRIPT_WATCHER_ACTIVE.store(false, Ordering::SeqCst);
     });
 }
 

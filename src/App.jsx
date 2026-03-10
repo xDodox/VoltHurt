@@ -13,7 +13,7 @@ import sirstrapIcon from "./assets/SirstrapIcon.png";
 import "./editor.css";
 
 import { setupLuau, MONACO_OPTIONS } from "./luau";
-import { Tooltip, TabIcon } from "./components";
+import { Tooltip, TabIcon, Toggle, Slider } from "./components";
 import { WelcomeTab } from "./WelcomeTab";
 
 const appWindow = getCurrentWindow();
@@ -56,7 +56,7 @@ function CloseConfirmDialog({ tabName, onDiscard, onCancel }) {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }}>
       <div style={{
         background: "#090b0f", border: "1px solid var(--accent-border)",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.95)", width: 290, borderRadius: 8, overflow: "hidden",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.95)", width: 290, borderRadius: "var(--radius)", overflow: "hidden",
       }}>
         <div style={{ padding: "20px 20px 14px", textAlign: "center" }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#e6edf3", marginBottom: 8 }}>Unsaved Changes</div>
@@ -68,7 +68,7 @@ function CloseConfirmDialog({ tabName, onDiscard, onCancel }) {
         <div style={{ display: "flex", gap: 8, padding: "4px 16px 16px" }}>
           <button onClick={onCancel} style={{
             flex: 1, height: 30, fontSize: 11, fontWeight: 500, border: "1px solid rgba(255,255,255,0.07)",
-            background: "rgba(255,255,255,0.03)", color: "#8b949e", borderRadius: 6, cursor: "pointer", outline: "none",
+            background: "rgba(255,255,255,0.03)", color: "#8b949e", borderRadius: "calc(var(--radius) * 0.75)", cursor: "pointer", outline: "none",
           }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
             onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}>
@@ -76,7 +76,7 @@ function CloseConfirmDialog({ tabName, onDiscard, onCancel }) {
           </button>
           <button onClick={onDiscard} style={{
             flex: 1, height: 30, fontSize: 11, fontWeight: 500, border: "1px solid rgba(248,81,73,0.25)",
-            background: "rgba(248,81,73,0.07)", color: "#f85149", borderRadius: 6, cursor: "pointer", outline: "none",
+            background: "rgba(248,81,73,0.07)", color: "#f85149", borderRadius: "calc(var(--radius) * 0.75)", cursor: "pointer", outline: "none",
           }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(248,81,73,0.14)"}
             onMouseLeave={e => e.currentTarget.style.background = "rgba(248,81,73,0.07)"}>
@@ -85,25 +85,6 @@ function CloseConfirmDialog({ tabName, onDiscard, onCancel }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function Toggle({ checked, onChange }) {
-  return (
-    <button onClick={() => onChange(!checked)}
-      className="relative shrink-0 transition-all duration-200 rounded-full"
-      style={{
-        width: 36, height: 20,
-        background: checked ? "var(--accent)" : "#2a2a2e",
-        boxShadow: checked ? "0 0 10px var(--accent-glow)" : "none"
-      }}>
-      <div style={{
-        position: "absolute", top: 3, left: checked ? 19 : 3,
-        width: 14, height: 14, borderRadius: "50%", background: "#fff",
-        transition: "left 0.2s cubic-bezier(0.4,0,0.2,1)",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.4)"
-      }} />
-    </button>
   );
 }
 
@@ -119,8 +100,8 @@ function SettingsRow({ label, sub, children }) {
   );
 }
 
-function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, statusInfo, isInjected }) {
-  const [section, setSection] = useState("editor");
+function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, statusInfo, isInjected, onResetPresets }) {
+  const [section, setSection] = useState(() => window.__settingsSection || "editor");
   const [localAccent, setLocalAccent] = useState(settings.accentColor);
   const accentTimer = useRef(null);
   const handleAccentChange = (val) => {
@@ -189,12 +170,13 @@ function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, stat
 
           <div className="w-[240px] bg-[#08080a] border-r border-white/5 flex flex-col pt-5 px-3 gap-1 shrink-0">
             {NAV.map(n => (
-              <button key={n.id} onClick={() => setSection(n.id)}
+<button key={n.id} onClick={() => { setSection(n.id); window.__settingsSection = n.id; }}
                 className={"flex items-center gap-3 px-4 py-3 rounded-xl text-[12px] font-bold transition-all text-left group cursor-pointer " + (
-                  section === n.id
-                    ? "bg-accent/15 text-accent-light border border-accent/30 shadow-[0_0_20px_var(--accent-glow)]"
-                    : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03] border border-transparent"
-                )}>
+                  
+                section === n.id
+                  ? "bg-accent/15 text-accent-light border border-accent/30"
+                  : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03] border border-transparent"
+                )} style={section === n.id ? { boxShadow: "0 0 20px var(--accent-glow)" } : {}}>
                 <div className={section === n.id ? "text-accent-light" : "text-gray-600 group-hover:text-gray-400"}>
                   {n.icon}
                 </div>
@@ -288,7 +270,7 @@ function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, stat
                         { name: "Infinite Yield", code: 'loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()' }
                       ];
                       Promise.all(defaults.map(d => invoke("save_script", { name: d.name, code: d.code })))
-                        .then(() => refreshLocalScripts())
+                        .then(() => onResetPresets())
                         .catch(console.error);
                     }}
                       className="px-4 py-2 text-[11px] font-bold bg-[#0a0a0c] hover:bg-white/[0.05] text-white rounded-xl border border-white/5 hover:border-white/10 transition-all cursor-pointer active:scale-95">
@@ -315,6 +297,15 @@ function SettingsOverlay({ show, onClose, settings, setSetting, appVersion, stat
                 <SettingsRow label="Discord RPC" sub="Show VoltHurt status in Discord">
                   <Toggle checked={settings.discordRpc} onChange={v => setSetting("discordRpc", v)} />
                 </SettingsRow>
+                <SettingsRow label="UI Roundness" sub="Corner radius for inner panels and buttons">
+  <div className="flex items-center gap-3">
+    <span className="text-[10px] text-gray-500 tabular-nums">0</span>
+    <div style={{ width: 140 }}>
+      <Slider min={0} max={8} value={settings.uiRadius ?? 8} onChange={v => setSetting("uiRadius", v)} />
+    </div>
+    <span className="text-[10px] font-bold tabular-nums" style={{ color: "var(--accent-light)", minWidth: 16 }}>{settings.uiRadius ?? 8}</span>
+  </div>
+</SettingsRow>
               </div>
             )}
 
@@ -606,6 +597,7 @@ export default function App() {
   const settingsRef = useRef({});
   const settingsLoaded = useRef(false);
   const sessionLoaded = useRef(false);
+  const terminalDivRef = useRef(null);
   const [isCreatingScript, setIsCreatingScript] = useState(false);
   const [isCreatingAutoExec, setIsCreatingAutoExec] = useState(false);
   const [newName, setNewName] = useState("");
@@ -766,6 +758,7 @@ export default function App() {
       injectDelay: 500,
       topMost: true,
       accentColor: "#c0392b",
+      uiRadius: 8,
       discordRpc: false,
       macAddress: "",
       bootstrapper: "sirstrap",
@@ -795,9 +788,10 @@ export default function App() {
         --accent-border: ${addAlpha(color, 0.4)};
         --accent-bg: ${addAlpha(color, 0.1)};
         --accent-hover: ${addAlpha(color, 0.15)};
+        --radius: ${settings.uiRadius ?? 8}px;
       }
     `;
-  }, [settings.accentColor]);
+  }, [settings.accentColor, settings.uiRadius]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
@@ -813,6 +807,7 @@ export default function App() {
         topMost: settings.topMost,
         accentColor: settings.accentColor,
         macAddress: settings.macAddress || "",
+        uiRadius: settings.uiRadius ?? 8,
         allowReinject: settings.allowReinject,
         discordRpc: settings.discordRpc,
         confirmTabDelete: settings.confirmTabDelete,
@@ -825,11 +820,14 @@ export default function App() {
 
   useEffect(() => {
     if (!sessionLoaded.current) return;
-    const liveCode = editorRef.current ? editorRef.current.getValue() : null;
-    const sessionTabs = tabs
-      .filter(t => t !== "Welcome")
-      .map(t => ({ name: t, code: (t === activeTab && liveCode !== null) ? liveCode : (codes[t] || ""), active: t === activeTab }));
-    invoke("save_session", { session: { tabs: sessionTabs } }).catch(console.error);
+    clearTimeout(saveSessionTimer.current);
+    saveSessionTimer.current = setTimeout(() => {
+      const liveCode = editorRef.current ? editorRef.current.getValue() : null;
+      const sessionTabs = tabs
+        .filter(t => t !== "Welcome")
+        .map(t => ({ name: t, code: (t === activeTab && liveCode !== null) ? liveCode : (codes[t] || ""), active: t === activeTab }));
+      invoke("save_session", { session: { tabs: sessionTabs } }).catch(console.error);
+    }, 500);
   }, [tabs, codes, activeTab]);
 
   const [isInjected, setIsInjected] = useState(false);
@@ -964,6 +962,7 @@ export default function App() {
   const startYRef = useRef(0);
   const startHRef = useRef(0);
   const logsEndRef = useRef(null);
+  const saveSessionTimer = useRef(null);
   const editorRef = useRef(null);
   const editorWrapRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -996,7 +995,7 @@ export default function App() {
     try {
       await invoke("delete_script", { name });
       refreshLocalScripts();
-      if (tabs.includes(name)) doCloseTab(name);
+      if (tabs.includes(name)) closeTab(null, name);
     } catch (err) {
       const time = new Date().toLocaleTimeString();
       setLogs(p => [...p, `[${time}][ERR] Delete failed: ${err} `]);
@@ -1012,8 +1011,10 @@ export default function App() {
   useEffect(() => {
     const unlistenLog = listen("sirhurt-log", (e) => {
       const line = e.payload;
-      setLogs((p) => [...p, line]);
-      setTimeout(() => logsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      setLogs((p) => {
+        const next = [...p, line];
+        return next.length > 1000 ? next.slice(-1000) : next;
+      });
     });
 
     const unlistenGame = listen("game-changed", (e) => {
@@ -1171,7 +1172,7 @@ export default function App() {
 
     let prevInstanceCount = 0;
     const interval = setInterval(() => {
-      if (isAttaching) return;
+      if (isAttachingRef.current) return;
       invoke("get_roblox_instances")
         .then(res => {
           if (res.length > prevInstanceCount) {
@@ -1207,6 +1208,7 @@ export default function App() {
     return () => {
       clearInterval(interval);
       window.open = originalOpen;
+      unlistenScripts.then(f => f());
     };
   }, []);
 
@@ -1375,14 +1377,18 @@ export default function App() {
 
   const addTerminalLog = (level, msg) => {
     const time = new Date().toLocaleTimeString();
-    setLogs((p) => [...p, `[${time}][${level}] ${msg}`]);
+    setLogs((p) => {
+      const next = [...p, `[${time}][${level}] ${msg}`];
+      return next.length > 1000 ? next.slice(-1000) : next;
+    });
     if (terminalCollapsed && level === "ERR") setTerminalCollapsed(false);
-    setTimeout(() => logsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   const addRawLog = (line) => {
-    setLogs((p) => [...p, line]);
-    setTimeout(() => logsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    setLogs((p) => {
+      const next = [...p, line];
+      return next.length > 1000 ? next.slice(-1000) : next;
+    });
   };
 
   const toggleTerminal = () => {
@@ -1394,7 +1400,7 @@ export default function App() {
   const execute = () => {
     if (activeTab === "Welcome") return;
     const time = new Date().toLocaleTimeString();
-    const code = codes[activeTab] || "";
+    const code = editorRef.current ? editorRef.current.getValue() : (codes[activeTab] || "");
 
     if (statusInfo && !statusInfo.coreFilesExist) {
       setLogs(p => [...p, `[${time}][ERR] Cannot execute: Core files missing.`]);
@@ -1601,13 +1607,48 @@ export default function App() {
   };
 
   useEffect(() => {
-    const onMove = (e) => { if (!termDraggingRef.current) return; setTerminalHeight(Math.min(500, Math.max(55, startHRef.current + (startYRef.current - e.clientY)))); };
-    const onUp = () => { termDraggingRef.current = false; };
+    const onMove = (e) => {
+      if (!termDraggingRef.current) return;
+      const newH = Math.min(500, Math.max(55, startHRef.current + (startYRef.current - e.clientY)));
+      if (terminalDivRef.current) terminalDivRef.current.style.height = newH + "px";
+    };
+    const onUp = (e) => {
+      if (!termDraggingRef.current) return;
+      termDraggingRef.current = false;
+      const newH = Math.min(500, Math.max(55, startHRef.current + (startYRef.current - e.clientY)));
+      setTerminalHeight(newH);
+      forceEditorLayout();
+    };
     window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, []);
 
-  const filteredLogs = termSearch ? logs.filter((l) => l.toLowerCase().includes(termSearch.toLowerCase())) : logs;
+  const logsContainerRef = useRef(null);
+
+  const [autoScroll, setAutoScroll] = useState(true);
+
+  useEffect(() => {
+    if (!autoScroll) return;
+    const el = logsContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [logs, autoScroll]);
+
+  useEffect(() => {
+    const el = logsContainerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+      setAutoScroll(atBottom);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const filteredLogs = termSearch
+    ? logs.filter((l) => l.toLowerCase().includes(termSearch.toLowerCase()))
+    : logs;
+  const visibleLogs = filteredLogs.slice(-80);
   const termH = terminalCollapsed ? 68 : terminalHeight;
   const termTransition = termAnimating ? "height 0.2s cubic-bezier(0.4,0,0.2,1)" : "none";
   return (
@@ -1653,9 +1694,9 @@ export default function App() {
               appVersion={appVersion}
               statusInfo={statusInfo}
               isInjected={isInjected}
+              onResetPresets={refreshLocalScripts}
             />
           )}
-          {showHelp && <HelpOverlay show={showHelp} onClose={() => setShowHelp(false)} />}
         </AnimatePresence>
 
         {closeConfirm && <CloseConfirmDialog tabName={closeConfirm.tabName} onDiscard={closeConfirm.onConfirm} onCancel={closeConfirm.onCancel} />}
@@ -1755,11 +1796,18 @@ export default function App() {
               </div>
               <div className="flex items-center gap-0.5">
                 {sidebarTab === "scripts" && (
-                  <Tooltip text="New script">
-                    <button onClick={() => setIsCreatingScript(true)} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-accent-light hover:bg-accent/10 rounded-md transition-all">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
-                    </button>
-                  </Tooltip>
+                  <>
+                    <Tooltip text="New script">
+                      <button onClick={() => setIsCreatingScript(true)} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-accent-light hover:bg-accent/10 rounded-md transition-all">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                      </button>
+                    </Tooltip>
+                    <Tooltip text="Open scripts folder">
+                      <button onClick={() => invoke("open_scripts_folder")} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-accent-light hover:bg-accent/10 rounded-md transition-all">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+                      </button>
+                    </Tooltip>
+                  </>
                 )}
                 <Tooltip text="Refresh">
                   <button onClick={refreshLocalScripts} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-gray-300 hover:bg-white/5 rounded-md transition-all">
@@ -1917,9 +1965,16 @@ export default function App() {
                 <div ref={autoExecPanelRef} className="h-full flex flex-col" style={{ height: "100%" }}>
                   <div className="mt-4 px-3 mb-2 flex items-center justify-between">
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Auto Exec</span>
-                    <button onClick={() => setIsCreatingAutoExec(true)} className="w-5 h-5 flex items-center justify-center text-gray-600 hover:text-white transition-all cursor-pointer">
-                      <i className="ri-add-line text-sm"></i>
-                    </button>
+                    <div className="flex items-center gap-0.5">
+                      <Tooltip text="Open autoexec folder">
+                        <button onClick={() => invoke("open_autoexec_folder")} className="w-5 h-5 flex items-center justify-center text-gray-600 hover:text-accent-light transition-all cursor-pointer">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+                        </button>
+                      </Tooltip>
+                      <button onClick={() => setIsCreatingAutoExec(true)} className="w-5 h-5 flex items-center justify-center text-gray-600 hover:text-white transition-all cursor-pointer">
+                        <i className="ri-add-line text-sm"></i>
+                      </button>
+                    </div>
                   </div>
 
                   <div
@@ -2048,12 +2103,12 @@ export default function App() {
                   </button>
                 </Tooltip>
                 <Tooltip text={isInjected && !settings.allowReinject ? "Already Attached" : "Attach to Roblox"}>
-                  <button onClick={attach} disabled={isInjected && !settings.allowReinject} className={`px-3 h-[26px] text-[11px] font-medium rounded-lg transition-all ${isInjected && !settings.allowReinject ? "bg-white/[0.04] text-gray-500 border border-white/[0.04] cursor-not-allowed" : "bg-accent hover:brightness-110 active:brightness-90 text-white shadow-[0_4px_12px_var(--accent-glow)] cursor-pointer"}`}>
+                  <button onClick={attach} disabled={isInjected && !settings.allowReinject} style={{ borderRadius: "var(--radius)" }} className={`px-3 h-[26px] text-[11px] font-medium transition-all ${isInjected && !settings.allowReinject ? "bg-white/[0.04] text-gray-500 border border-white/[0.04] cursor-not-allowed" : "bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.04] text-gray-300 hover:text-white border border-white/10 hover:border-white/20 cursor-pointer"}`}>
                     Attach
                   </button>
                 </Tooltip>
                 <Tooltip text="Run script (F5)">
-                  <button onClick={execute} className="px-4 h-[26px] text-[11px] font-semibold rounded-lg transition-all flex items-center gap-1.5 bg-accent hover:brightness-110 active:brightness-90 text-white shadow-[0_4px_12px_var(--accent-glow)] cursor-pointer">
+                  <button onClick={execute} style={{ borderRadius: "var(--radius)" }} className="px-4 h-[26px] text-[11px] font-semibold transition-all flex items-center gap-1.5 bg-accent hover:brightness-110 active:brightness-90 text-white shadow-[0_4px_12px_var(--accent-glow)] cursor-pointer">
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>Execute
                   </button>
                 </Tooltip>
@@ -2125,7 +2180,7 @@ export default function App() {
               )}
             </div>
 
-            <div className="bg-[#070709] border-t border-[var(--accent)]/20 flex flex-col shrink-0 overflow-hidden"
+            <div ref={terminalDivRef} className="bg-[#070709] border-t border-[var(--accent)]/20 flex flex-col shrink-0 overflow-hidden"
               style={{ height: termH, transition: termTransition, borderColor: "var(--accent-border)" }}>
 
               <div className="flex items-center bg-[#070709] border-b border-white/5 h-8 px-2 overflow-x-auto hide-scroll shrink-0" style={{ scrollbarWidth: "none" }}>
@@ -2223,6 +2278,16 @@ export default function App() {
                       <span className="text-[8px] font-bold uppercase tracking-tighter opacity-70 group-hover:opacity-100">Clean</span>
                     </button>
                   </Tooltip>
+                  <button
+                    onClick={() => setAutoScroll(v => !v)}
+                    title={autoScroll ? "Auto-scroll ON" : "Auto-scroll OFF"}
+                    className={`w-6 h-6 flex items-center justify-center rounded transition-all cursor-pointer
+    ${autoScroll ? "text-accent-light bg-accent/15 border border-accent/30" : "text-gray-600 hover:text-gray-300 hover:bg-white/[0.06]"}`}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 5v14M5 15l7 7 7-7" />
+                    </svg>
+                  </button>
                   <button onClick={() => setLogs([])} className="p-1.5 rounded hover:bg-white/5 text-gray-600 hover:text-gray-400 transition-colors cursor-pointer" title="Clear logs">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
                   </button>
@@ -2234,7 +2299,7 @@ export default function App() {
                 </div>
               </div>
               {!terminalCollapsed && (
-                <div className="flex-1 overflow-y-auto px-2 py-1.5 font-mono min-h-0 hide-scroll" style={{ scrollbarWidth: "none", userSelect: "text" }}>
+                <div ref={logsContainerRef} className="flex-1 overflow-y-auto px-2 py-1.5 font-mono min-h-0 hide-scroll" style={{ scrollbarWidth: "none", userSelect: "text" }}>
                   {logs.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full gap-2 opacity-30 pointer-events-none">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-light)" strokeWidth="1.5"><polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" /></svg>
@@ -2243,7 +2308,7 @@ export default function App() {
                       </span>
                     </div>
                   )}
-                  {logs.map((log, i) => {
+                  {visibleLogs.map((log, i) => {
                     const { timestamp, level, message, style, isSirhurt } = parseLogLine(log);
                     return (
                       <div key={i} className="flex items-baseline gap-1.5 text-[10.5px] leading-[21px] px-1 rounded hover:bg-white/[0.02] cursor-text group">

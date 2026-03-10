@@ -36,6 +36,7 @@ pub struct Config {
     pub folding: bool,
     pub roblox_path: String,
     pub wizard_shown: bool,
+    pub ui_radius: u8,
 }
 
 impl Default for Config {
@@ -57,6 +58,7 @@ impl Default for Config {
             folding: true,
             roblox_path: String::new(),
             wizard_shown: false,
+            ui_radius: 8,
         }
     }
 }
